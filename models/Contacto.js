@@ -10,17 +10,30 @@ class ContactoModel {
 
       // Subir foto a S3 si existe
       if (file) {
-        const fileName = `contactos/${uuidv4()}-${file.originalname}`;
-        const params = {
-          Bucket: bucketName,
-          Key: fileName,
-          Body: file.buffer,
-          ContentType: file.mimetype,
-          ACL: 'public-read' // Hacer la imagen pública
-        };
+        try {
+          console.log('📤 Intentando subir foto a S3...');
+          console.log('Bucket:', bucketName);
+          console.log('Archivo:', file.originalname);
+          
+          const fileName = `contactos/${uuidv4()}-${file.originalname}`;
+          const params = {
+            Bucket: bucketName,
+            Key: fileName,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+            ACL: 'public-read' // Hacer la imagen pública
+          };
 
-        const uploadResult = await s3.upload(params).promise();
-        fotoUrl = uploadResult.Location;
+          const uploadResult = await s3.upload(params).promise();
+          fotoUrl = uploadResult.Location;
+          console.log('✅ Foto subida exitosamente:', fotoUrl);
+        } catch (s3Error) {
+          console.error('❌ Error al subir foto a S3:', s3Error.message);
+          console.error('Código de error:', s3Error.code);
+          console.error('Detalles:', s3Error);
+          // Si falla S3, continuamos sin foto (TEMPORAL para debugging)
+          console.warn('⚠️  Continuando sin foto...');
+        }
       }
 
       // Insertar en la base de datos
@@ -35,6 +48,7 @@ class ContactoModel {
         foto: fotoUrl
       };
     } catch (error) {
+      console.error('❌ Error en ContactoModel.crear:', error);
       throw error;
     }
   }
@@ -85,29 +99,43 @@ class ContactoModel {
 
       // Si hay nueva foto, subir a S3 y eliminar la anterior
       if (file) {
-        // Eliminar foto anterior de S3 si existe
-        if (contactoActual.foto) {
-          const oldKey = contactoActual.foto.split('.com/')[1];
-          if (oldKey) {
-            await s3.deleteObject({
-              Bucket: bucketName,
-              Key: oldKey
-            }).promise();
+        try {
+          console.log('📤 Intentando actualizar foto en S3...');
+          
+          // Eliminar foto anterior de S3 si existe
+          if (contactoActual.foto) {
+            try {
+              const oldKey = contactoActual.foto.split('.com/')[1];
+              if (oldKey) {
+                await s3.deleteObject({
+                  Bucket: bucketName,
+                  Key: oldKey
+                }).promise();
+                console.log('🗑️  Foto anterior eliminada de S3');
+              }
+            } catch (deleteError) {
+              console.warn('⚠️  No se pudo eliminar la foto anterior:', deleteError.message);
+            }
           }
+
+          // Subir nueva foto
+          const fileName = `contactos/${uuidv4()}-${file.originalname}`;
+          const params = {
+            Bucket: bucketName,
+            Key: fileName,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+            ACL: 'public-read'
+          };
+
+          const uploadResult = await s3.upload(params).promise();
+          fotoUrl = uploadResult.Location;
+          console.log('✅ Nueva foto subida exitosamente:', fotoUrl);
+        } catch (s3Error) {
+          console.error('❌ Error al actualizar foto en S3:', s3Error.message);
+          console.warn('⚠️  Continuando sin cambiar la foto...');
+          // Mantener la foto anterior si falla
         }
-
-        // Subir nueva foto
-        const fileName = `contactos/${uuidv4()}-${file.originalname}`;
-        const params = {
-          Bucket: bucketName,
-          Key: fileName,
-          Body: file.buffer,
-          ContentType: file.mimetype,
-          ACL: 'public-read'
-        };
-
-        const uploadResult = await s3.upload(params).promise();
-        fotoUrl = uploadResult.Location;
       }
 
       // Actualizar en la base de datos
@@ -137,12 +165,18 @@ class ContactoModel {
 
       // Eliminar foto de S3 si existe
       if (contacto.foto) {
-        const key = contacto.foto.split('.com/')[1];
-        if (key) {
-          await s3.deleteObject({
-            Bucket: bucketName,
-            Key: key
-          }).promise();
+        try {
+          const key = contacto.foto.split('.com/')[1];
+          if (key) {
+            await s3.deleteObject({
+              Bucket: bucketName,
+              Key: key
+            }).promise();
+            console.log('🗑️  Foto eliminada de S3:', key);
+          }
+        } catch (s3Error) {
+          console.warn('⚠️  No se pudo eliminar la foto de S3:', s3Error.message);
+          // Continuar con la eliminación del contacto aunque falle S3
         }
       }
 
