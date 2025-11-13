@@ -1,0 +1,170 @@
+{
+  "name": "Agenda de Contactos - API Testing",
+  "description": "Colección de Postman para probar la API de Agenda de Contactos",
+  "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+  "item": [
+    {
+      "name": "Contactos",
+      "item": [
+        {
+          "name": "Listar todos los contactos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/contactos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contactos"]
+            }
+          }
+        },
+        {
+          "name": "Obtener contacto por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/contactos/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contactos", "1"]
+            }
+          }
+        },
+        {
+          "name": "Buscar por apellido",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/contactos/buscar/apellido?apellido=Pérez",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contactos", "buscar", "apellido"],
+              "query": [
+                {
+                  "key": "apellido",
+                  "value": "Pérez"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear contacto con foto",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "nombre",
+                  "value": "Juan",
+                  "type": "text"
+                },
+                {
+                  "key": "apellidos",
+                  "value": "Pérez García",
+                  "type": "text"
+                },
+                {
+                  "key": "correo",
+                  "value": "juan.perez@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "fecha_nac",
+                  "value": "1990-05-15",
+                  "type": "text"
+                },
+                {
+                  "key": "foto",
+                  "type": "file",
+                  "src": "/path/to/photo.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/contactos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contactos"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar contacto",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "nombre",
+                  "value": "Juan",
+                  "type": "text"
+                },
+                {
+                  "key": "apellidos",
+                  "value": "Pérez López",
+                  "type": "text"
+                },
+                {
+                  "key": "correo",
+                  "value": "juan.perez@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "fecha_nac",
+                  "value": "1990-05-15",
+                  "type": "text"
+                },
+                {
+                  "key": "foto",
+                  "type": "file",
+                  "src": "/path/to/new-photo.jpg",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/contactos/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contactos", "1"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar contacto",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/contactos/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contactos", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ]
+}
